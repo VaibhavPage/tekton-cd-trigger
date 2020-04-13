@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-trigger
+  labels:
+    app: tekton-trigger
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: tekton-trigger
+      labels:
+        app: tekton-trigger
+    spec:
+      containers:
+        - name: tekton-trigger
+          image: metalgearsolid/tekton-trigger:v0.1.0
+          imagePullPolicy: Always
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      app: tekton-trigger
