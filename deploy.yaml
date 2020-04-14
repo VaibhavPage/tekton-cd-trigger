@@ -12,6 +12,7 @@ spec:
       labels:
         app: tekton-trigger
     spec:
+      serviceAccountName: argo-events-sa
       containers:
         - name: tekton-trigger
           image: metalgearsolid/tekton-trigger:v0.1.0
@@ -20,3 +21,15 @@ spec:
   selector:
     matchLabels:
       app: tekton-trigger
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tekton-trigger
+spec:
+  selector:
+    app: tekton-trigger
+  ports:
+    - port: 9000
+      targetPort: 9000
+  type: LoadBalancer

@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  name: example-2
+spec:
+  pipelineSpec:
+    params:
+      - name: MESSAGE
+        description: "Message, default is Hello World!"
+        type: string
+        default: "Hello World!"
+    tasks:
+      - name: echo-message
+        taskSpec:
+          inputs:
+            params:
+              - name: MESSAGE
+                type: string
+                default: "Hello World!"
+          steps:
+            - name: echo
+              image: ubuntu
+              script: |
+                #!/usr/bin/env bash
+                echo "$(inputs.params.MESSAGE)"
+        params:
+          - name: MESSAGE
+            value: $(params.MESSAGE)
+  params:
+    - name: MESSAGE
+      value: "Good Morning!"
