@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
   name: example
+  namespace: tekton-pipelines
 spec:
   pipelineSpec:
     tasks:
