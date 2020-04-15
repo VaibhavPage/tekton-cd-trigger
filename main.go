@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -21,13 +22,9 @@ type TektonCDTrigger struct {
 	pipelineClient v1alpha1.TektonV1alpha1Interface
 }
 
-type TriggerResource struct {
-	URL string `json:"url"`
-}
-
 // FetchResource fetches the resource to be triggered.
 func (t *TektonCDTrigger) FetchResource(ctx context.Context, in *proto.FetchResourceRequest) (*proto.FetchResourceResponse, error) {
-	var resource *TriggerResource
+	var resource map[string]string
 	if err := yaml.Unmarshal(in.Resource, &resource); err != nil {
 		return nil, err
 	}
@@ -37,7 +34,7 @@ func (t *TektonCDTrigger) FetchResource(ctx context.Context, in *proto.FetchReso
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
-	resp, err := client.Get(resource.URL)
+	resp, err := client.Get(resource["url"])
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +49,20 @@ func (t *TektonCDTrigger) FetchResource(ctx context.Context, in *proto.FetchReso
 		return nil, err
 	}
 
+	var pr *cdpipeline.PipelineRun
+	if err := yaml.Unmarshal(content, &pr); err != nil {
+		return nil, err
+	}
+
+	body, err := json.Marshal(&pr)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("the resource is: %s\n", string(body))
+
 	return &proto.FetchResourceResponse{
-		Resource: content,
+		Resource: body,
 	}, nil
 }
 
@@ -63,6 +72,8 @@ func (t *TektonCDTrigger) Execute(ctx context.Context, in *proto.ExecuteRequest)
 	if err := yaml.Unmarshal(in.Resource, &p); err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("the resource to execute is: %s\n", string(in.Resource))
 
 	response, err := t.pipelineClient.PipelineRuns(p.Namespace).Create(p)
 	if err != nil {
