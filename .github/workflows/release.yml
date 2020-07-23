@@ -28,7 +28,7 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: Build binaries
       run: |
-        make build
+        make trigger-linux
         chmod -R +x dist
         zip -r dist.zip dist
     
